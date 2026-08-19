@@ -1,7 +1,55 @@
-# Fingernotes
+# Fingernotes · 拇指单词
 
-An interactive camera experience that places custom Chinese or English words on fingertips and reads a word aloud when the thumb touches that finger.
+一个基于摄像头手势识别的互动单词实验：你可以为左右手的食指、中指、无名指和小指分别输入中文或英文；当大拇指碰到某根手指时，网页会朗读这根手指上的内容。
 
-Open the GitHub Pages link in a modern browser, allow camera access, and tap **TEST VOICE** before starting the camera.
+无需安装 App，也不会上传或保存摄像头画面。项目由一个 `index.html` 文件组成，适合用来学习单词、制作互动演示或体验浏览器中的实时手势识别。
 
-Camera processing happens locally in the browser. An internet connection is required to load the hand-tracking model and online speech fallback.
+## 在线体验
+
+**[打开 Fingernotes](https://heyjiayi.github.io/fingernotes/)**
+
+推荐使用最新版 Chrome 或 Safari，并允许网页访问摄像头。手机端请在系统浏览器中打开，不要使用微信等应用的内置浏览器。
+
+## 功能
+
+- 为左右手的 8 根非拇指手指自定义中文或英文内容
+- 单词跟随对应指尖实时移动
+- 大拇指不显示文字，只负责触发朗读
+- 自动识别中文或英文，并选择对应语音
+- 支持一只手或两只手同时识别
+- 输入内容自动保存在当前设备的浏览器中
+- 摄像头画面只在本地浏览器处理，不会上传或录制
+
+## 如何使用
+
+1. 打开在线体验链接。
+2. 在左右手区域输入想显示的中文或英文。
+3. 点击 **测试朗读 TEST VOICE**，确认设备声音正常。
+4. 点击 **开启摄像头 START CAMERA** 并允许摄像头权限。
+5. 将手掌朝向摄像头，用大拇指碰触其他手指，即可朗读对应内容。
+
+## 下载后运行
+
+直接下载仓库后，电脑端可尝试双击 `index.html` 打开。不过部分浏览器会限制本地文件使用摄像头，因此更推荐在仓库目录启动本地服务器：
+
+```bash
+python3 -m http.server 8000
+```
+
+然后访问：
+
+```text
+http://localhost:8000
+```
+
+手机直接打开下载的 HTML 文件时，系统可能禁止摄像头或语音功能。手机使用时建议直接访问上面的 GitHub Pages HTTPS 链接。
+
+## 运行条件
+
+- 使用支持摄像头和 Web Speech API 的现代浏览器
+- 首次加载手势识别模型及联网语音时需要网络连接
+- 必须由用户主动允许摄像头权限
+
+## 技术说明
+
+项目使用 MediaPipe Hand Landmarker 在浏览器中识别手部关键点，通过 Canvas 绘制指尖文字，并结合在线语音与浏览器 Speech Synthesis 实现中英文朗读。
