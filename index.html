@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Fingernotes · 拇指单词</title>
+  <style>
+    :root {
+      --paper: #f3efe7;
+      --ink: #171714;
+      --muted: #6f6a62;
+      --pink: #ff2e9f;
+      --green: #92ff33;
+      --blue: #193cff;
+      --red: #ff092f;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body {
+      overflow-x: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .app { min-height: 100vh; min-height: 100svh; position: relative; }
+    .topbar {
+      position: fixed;
+      z-index: 20;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      pointer-events: none;
+    }
+    .brand {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -.06em;
+    }
+    .brand span { color: var(--pink); }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border: 1px solid rgba(23,23,20,.2);
+      background: rgba(243,239,231,.85);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      backdrop-filter: blur(10px);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #aaa49a;
+      box-shadow: 0 0 0 3px rgba(170,164,154,.15);
+    }
+    .status-dot.found {
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(146,255,51,.22);
+    }
+    .intro {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      min-height: 100vh;
+      min-height: 100svh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 76px 20px 58px;
+      text-align: center;
+    }
+    .eyebrow {
+      margin-bottom: 14px;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .2em;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(54px, 9vw, 118px);
+      letter-spacing: -.085em;
+      line-height: .79;
+    }
+    h1 em { color: var(--pink); font-family: Georgia, serif; font-weight: 400; }
+    .copy {
+      margin: 26px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.65;
+    }
+    .config {
+      position: relative;
+      display: grid;
+      width: min(840px, 88vw);
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 25px;
+      padding: 14px;
+      border: 1px solid rgba(23,23,20,.2);
+      background: rgba(243,239,231,.8);
+      box-shadow: 7px 7px 0 rgba(23,23,20,.09);
+      backdrop-filter: blur(12px);
+    }
+    fieldset {
+      min-width: 0;
+      margin: 0;
+      padding: 10px;
+      border: 1px solid rgba(23,23,20,.17);
+    }
+    legend {
+      padding: 0 7px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .14em;
+    }
+    .inputs { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
+    label { display: grid; min-width: 0; gap: 5px; text-align: left; }
+    label span {
+      padding-left: 2px;
+      color: #817b71;
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+    input {
+      width: 100%;
+      min-width: 0;
+      height: 36px;
+      padding: 0 8px;
+      border: 1px solid rgba(23,23,20,.2);
+      border-radius: 0;
+      outline: none;
+      background: rgba(255,255,255,.62);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    input:focus {
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 3px 3px 0 rgba(25,60,255,.2);
+    }
+    .minor {
+      position: absolute;
+      bottom: -25px;
+      padding: 0;
+      border: 0;
+      border-bottom: 1px solid currentColor;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .1em;
+    }
+    #testVoice { left: 15px; }
+    #resetWords { right: 15px; }
+    .start {
+      display: flex;
+      width: min(360px, 78vw);
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 52px;
+      padding: 8px 9px 8px 20px;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 7px 7px 0 var(--pink);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .13em;
+    }
+    .start b {
+      display: grid;
+      width: 39px;
+      height: 39px;
+      place-items: center;
+      background: var(--green);
+      color: var(--ink);
+      font-size: 18px;
+    }
+    .start:disabled { cursor: wait; opacity: .6; }
+    .message {
+      min-height: 18px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .message.error { color: #cc1645; }
+    .camera {
+      position: fixed;
+      z-index: 1;
+      inset: 0;
+      display: none;
+      overflow: hidden;
+      background: #080808;
+    }
+    .live .camera { display: block; }
+    video, canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      inset: 0;
+    }
+    video { object-fit: cover; transform: scaleX(-1); }
+    canvas { z-index: 2; }
+    .live .intro { display: none; }
+    .live-note {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: 88px;
+      display: none;
+      min-width: min(420px,84vw);
+      transform: translateX(-50%);
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .live .live-note { display: grid; gap: 4px; }
+    .live-note strong { font-size: 11px; letter-spacing: .08em; }
+    .live-note small { color: rgba(255,255,255,.65); font-size: 8px; letter-spacing: .12em; }
+    .controls {
+      position: fixed;
+      z-index: 12;
+      right: 22px;
+      bottom: 22px;
+      display: none;
+      gap: 8px;
+    }
+    .live .controls { display: flex; }
+    .controls button {
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.3);
+      background: rgba(0,0,0,.72);
+      color: white;
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      backdrop-filter: blur(8px);
+    }
+    footer {
+      position: fixed;
+      z-index: 15;
+      right: 22px;
+      bottom: 18px;
+      left: 22px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: .13em;
+      pointer-events: none;
+    }
+    .live footer { display: none; }
+    @media (max-width: 720px) {
+      .intro { justify-content: flex-start; padding-top: 110px; }
+      .config { grid-template-columns: 1fr; width: min(94vw,500px); }
+      h1 { font-size: clamp(51px,17vw,78px); }
+      .inputs { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" class="app">
+    <header class="topbar">
+      <div class="brand"><span>finger</span>notes</div>
+      <div class="status"><i id="statusDot" class="status-dot"></i><span id="statusText">PRIVATE CAMERA</span></div>
+    </header>
+
+    <section class="intro">
+      <div class="eyebrow">AN INTERACTIVE CAMERA TOY</div>
+      <h1>Say it with<br>your <em>hands.</em></h1>
+      <p class="copy">输入中文或英文，再用大拇指碰触对应手指。<br>文字只留在其他四指上，大拇指负责触发朗读。</p>
+
+      <div class="config">
+        <fieldset>
+          <legend>屏幕左手 SCREEN LEFT</legend>
+          <div id="leftInputs" class="inputs"></div>
+        </fieldset>
+        <fieldset>
+          <legend>屏幕右手 SCREEN RIGHT</legend>
+          <div id="rightInputs" class="inputs"></div>
+        </fieldset>
+        <button id="testVoice" class="minor" type="button">测试朗读 TEST VOICE</button>
+        <button id="resetWords" class="minor" type="button">恢复示例 RESET</button>
+      </div>
+
+      <button id="start" class="start" type="button"><span>开启摄像头 START CAMERA</span><b>↗</b></button>
+      <p id="message" class="message">摄像头画面只在你的设备上处理。</p>
+    </section>
+
+    <section class="camera">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas"></canvas>
+    </section>
+
+    <div class="live-note"><strong id="liveMessage">请伸出一只或两只手</strong><small>拇指碰到其他手指即可朗读</small></div>
+    <nav class="controls">
+      <button id="flip" type="button">↻ 切换 FLIP</button>
+      <button id="close" type="button">× 关闭 CLOSE</button>
+    </nav>
+    <footer><span>REAL-TIME HAND TRACKING</span><span>NO VIDEO IS RECORDED</span></footer>
+  </main>
+
+  <script type="module">
+    const VERSION = "0.10.22-rc.20250304";
+    const MODULE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}/vision_bundle.mjs`;
+    const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}/wasm`;
+    const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+    const DEFAULT_WORDS = ["你好", "快乐", "朋友", "", "I", "love", "Bunnies", ""];
+    const COLORS = ["#ff2e9f", "#00f0dd", "#ff2e9f", "#92ff33", "#ff00a8", "#92ff33", "#193cff", "#00f0dd"];
+    const FINGERS = ["食指 INDEX", "中指 MIDDLE", "无名指 RING", "小指 PINKY"];
+    const TIP_INDEXES = [4, 8, 12, 16, 20];
+
+    const app = document.querySelector("#app");
+    const video = document.querySelector("#video");
+    const canvas = document.querySelector("#canvas");
+    const message = document.querySelector("#message");
+    const liveMessage = document.querySelector("#liveMessage");
+    const statusText = document.querySelector("#statusText");
+    const statusDot = document.querySelector("#statusDot");
+    const startButton = document.querySelector("#start");
+    const context = canvas.getContext("2d");
+
+    let words = [...DEFAULT_WORDS];
+    let tracker = null;
+    let stream = null;
+    let frame = null;
+    let facingMode = "user";
+    let smoothPoints = [];
+    let smoothThumbs = [];
+    let touching = new Set();
+    let activeUntil = {};
+    let speechGeneration = 0;
+    let speechTimer = null;
+    const remoteVoice = new Audio();
+    remoteVoice.preload = "auto";
+
+    try {
+      const saved = JSON.parse(localStorage.getItem("fingernotes-words-html"));
+      if (Array.isArray(saved) && saved.length === 8 && saved.every(value => typeof value === "string")) words = saved;
+    } catch {}
+
+    function saveWords() {
+      try { localStorage.setItem("fingernotes-words-html", JSON.stringify(words)); } catch {}
+    }
+
+    function renderInputs() {
+      ["leftInputs", "rightInputs"].forEach((id, handIndex) => {
+        const root = document.querySelector(`#${id}`);
+        root.replaceChildren();
+        FINGERS.forEach((finger, fingerIndex) => {
+          const slot = handIndex * 4 + fingerIndex;
+          const label = document.createElement("label");
+          const title = document.createElement("span");
+          const input = document.createElement("input");
+          title.textContent = finger;
+          input.type = "text";
+          input.maxLength = 18;
+          input.value = words[slot];
+          input.placeholder = "—";
+          input.addEventListener("input", () => {
+            words[slot] = input.value;
+            saveWords();
+          });
+          label.append(title, input);
+          root.append(label);
+        });
+      });
+    }
+
+    function hasChinese(text) {
+      return /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/u.test(text);
+    }
+
+    function speakWord(word, index = 0) {
+      const trimmed = word.trim();
+      if (!trimmed) return;
+      const chinese = hasChinese(trimmed);
+      const text = chinese ? trimmed : trimmed.toLocaleLowerCase("en-US").replace(/\bi\b/gu, "eye");
+      const generation = ++speechGeneration;
+      if (speechTimer) clearTimeout(speechTimer);
+      window.speechSynthesis?.cancel();
+      remoteVoice.pause();
+      remoteVoice.onplaying = null;
+      remoteVoice.onerror = null;
+
+      let browserFallbackStarted = false;
+      const useBrowserVoice = () => {
+        if (
+          browserFallbackStarted ||
+          generation !== speechGeneration ||
+          !("speechSynthesis" in window)
+        ) return;
+        browserFallbackStarted = true;
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        synth.resume();
+
+        const attempt = retry => {
+          if (generation !== speechGeneration) return;
+          let started = false;
+          const utterance = new SpeechSynthesisUtterance(text);
+          const voices = synth.getVoices();
+          if (chinese) {
+            utterance.voice =
+              voices.find(v => /^zh-(CN|Hans)/i.test(v.lang) && /Ting|Mei|Xiaoxiao|普通话|Mandarin|Google/i.test(v.name)) ||
+              voices.find(v => /^zh-(CN|Hans)/i.test(v.lang)) ||
+              voices.find(v => v.lang.toLowerCase().startsWith("zh")) || null;
+            utterance.lang = "zh-CN";
+            utterance.rate = .92;
+          } else {
+            utterance.voice =
+              voices.find(v => v.lang === "en-US" && /Samantha|Google US English/i.test(v.name)) ||
+              voices.find(v => v.lang.startsWith("en")) || null;
+            utterance.lang = "en-US";
+            utterance.rate = .86;
+            utterance.pitch = 1.05;
+          }
+          utterance.onstart = () => {
+            started = true;
+            if (speechTimer) clearTimeout(speechTimer);
+            message.textContent = "朗读正常。";
+            message.classList.remove("error");
+          };
+          utterance.onerror = event => {
+            if (!retry && !["canceled", "interrupted"].includes(event.error)) {
+              synth.resume();
+              speechTimer = setTimeout(() => attempt(true), 120);
+            } else if (retry) {
+              message.textContent = "当前设备没有可用声音，请检查浏览器和系统音量。";
+              message.classList.add("error");
+            }
+          };
+          synth.resume();
+          synth.speak(utterance);
+          speechTimer = setTimeout(() => {
+            if (generation === speechGeneration && !started && !synth.speaking) {
+              if (!retry) attempt(true);
+              else {
+                message.textContent = "当前设备没有可用声音，请检查浏览器和系统音量。";
+                message.classList.add("error");
+              }
+            }
+          }, 500);
+        };
+        attempt(false);
+      };
+
+      remoteVoice.onplaying = () => {
+        if (generation !== speechGeneration) return;
+        if (speechTimer) clearTimeout(speechTimer);
+        message.textContent = "联网语音朗读正常。";
+        message.classList.remove("error");
+      };
+      remoteVoice.onerror = useBrowserVoice;
+      remoteVoice.src =
+        `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${chinese ? "zh-CN" : "en-US"}&q=${encodeURIComponent(text)}`;
+      remoteVoice.play().catch(useBrowserVoice);
+      speechTimer = setTimeout(() => {
+        if (generation !== speechGeneration) return;
+        if (remoteVoice.paused) useBrowserVoice();
+      }, 1200);
+      activeUntil[index] = performance.now() + 650;
+    }
+
+    function unlockSpeech() {
+      if ("speechSynthesis" in window) {
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        synth.resume();
+        const silent = new SpeechSynthesisUtterance("\u00a0");
+        silent.volume = 0;
+        synth.speak(silent);
+      }
+      remoteVoice.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA";
+      remoteVoice.volume = 0;
+      remoteVoice.play().then(() => {
+        remoteVoice.pause();
+        remoteVoice.currentTime = 0;
+        remoteVoice.volume = 1;
+      }).catch(() => {
+        remoteVoice.volume = 1;
+      });
+    }
+
+    function coverTransform(sourceWidth, sourceHeight, targetWidth, targetHeight) {
+      const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight);
+      return {
+        scale,
+        offsetX: (targetWidth - sourceWidth * scale) / 2,
+        offsetY: (targetHeight - sourceHeight * scale) / 2,
+      };
+    }
+
+    function wordAnchors(hands, width, height) {
+      const sourceWidth = video.videoWidth || 1280;
+      const sourceHeight = video.videoHeight || 720;
+      const transform = coverTransform(sourceWidth, sourceHeight, width, height);
+      const converted = hands.map((hand, handIndex) => {
+        const points = TIP_INDEXES.map(tipIndex => {
+          const point = hand[tipIndex];
+          return {
+            x: transform.offsetX + (1 - point.x) * sourceWidth * transform.scale,
+            y: transform.offsetY + point.y * sourceHeight * transform.scale,
+            handIndex, tipIndex, slotIndex: -1,
+          };
+        });
+        const fingerPoints = points.filter(point => point.tipIndex !== 4);
+        const center = fingerPoints.reduce((sum, point) => sum + point.x, 0) / fingerPoints.length;
+        return { points: fingerPoints, thumb: points[0], center };
+      });
+      if (converted.length < 2) {
+        const hand = converted[0];
+        const base = hand && hand.center < width / 2 ? 0 : 4;
+        return {
+          anchors: (hand?.points || []).map((point, i) => ({ ...point, slotIndex: base + i })),
+          thumbs: converted.map(hand => hand.thumb),
+        };
+      }
+      const [left, right] = converted.sort((a, b) => a.center - b.center);
+      return {
+        anchors: [
+          ...left.points.map((point, i) => ({ ...point, slotIndex: i })),
+          ...right.points.map((point, i) => ({ ...point, slotIndex: i + 4 })),
+        ],
+        thumbs: [left.thumb, right.thumb],
+      };
+    }
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function drawDot(point, radius, active = false) {
+      context.save();
+      context.translate(point.x, point.y);
+      if (active) {
+        context.fillStyle = "rgba(146,255,51,.28)";
+        context.beginPath();
+        context.arc(0, 0, radius * 3.2, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.fillStyle = "#ff092f";
+      context.shadowColor = active ? "rgba(146,255,51,.9)" : "rgba(255,9,47,.38)";
+      context.shadowBlur = active ? 24 : 9;
+      context.beginPath();
+      context.arc(0, 0, active ? radius * 1.35 : radius, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
+    }
+
+    async function startCamera(nextFacing = facingMode) {
+      startButton.disabled = true;
+      startButton.querySelector("span").textContent = "正在加载手势模型…";
+      message.textContent = "首次打开需要联网下载手势模型。";
+      message.classList.remove("error");
+      try {
+        stopCamera(false);
+        unlockSpeech();
+        facingMode = nextFacing;
+        const vision = await import(MODULE_URL);
+        const fileset = await vision.FilesetResolver.forVisionTasks(WASM_URL);
+        tracker = await vision.HandLandmarker.createFromOptions(fileset, {
+          baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
+          runningMode: "VIDEO",
+          numHands: 2,
+          minHandDetectionConfidence: .55,
+          minHandPresenceConfidence: .5,
+          minTrackingConfidence: .5,
+        });
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        });
+        video.srcObject = stream;
+        await video.play();
+        app.classList.add("live");
+        liveMessage.textContent = "请伸出一只或两只手";
+        renderFrame();
+      } catch (error) {
+        console.error(error);
+        stopCamera(false);
+        message.textContent =
+          error?.name === "NotAllowedError"
+            ? "摄像头权限被拒绝。请允许权限后再试，建议使用最新版 Chrome。"
+            : "无法启动。请确认已联网，并使用最新版 Chrome 打开此文件。";
+        message.classList.add("error");
+      } finally {
+        startButton.disabled = false;
+        startButton.querySelector("span").textContent = "开启摄像头 START CAMERA";
+      }
+    }
+
+    let lastVideoTime = -1;
+    let lastHandCount = -1;
+    function renderFrame() {
+      const rect = canvas.getBoundingClientRect();
+      const density = Math.min(devicePixelRatio || 1, 2);
+      const pixelWidth = Math.round(rect.width * density);
+      const pixelHeight = Math.round(rect.height * density);
+      if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+        canvas.width = pixelWidth;
+        canvas.height = pixelHeight;
+      }
+      context.setTransform(density, 0, 0, density, 0, 0);
+
+      if (tracker && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+        lastVideoTime = video.currentTime;
+        context.clearRect(0, 0, rect.width, rect.height);
+        const result = tracker.detectForVideo(video, performance.now());
+        if (result.landmarks.length !== lastHandCount) {
+          lastHandCount = result.landmarks.length;
+          statusText.textContent = `${lastHandCount}/2 HANDS`;
+          statusDot.classList.toggle("found", lastHandCount > 0);
+          liveMessage.textContent = lastHandCount ? "用大拇指碰触一个单词" : "请伸出一只或两只手";
+        }
+        const tracking = wordAnchors(result.landmarks, rect.width, rect.height);
+        tracking.thumbs.forEach((point, i) => {
+          const old = smoothThumbs[i];
+          const next = old ? { x: old.x * .64 + point.x * .36, y: old.y * .64 + point.y * .36 } : point;
+          smoothThumbs[i] = next;
+          drawDot(next, Math.max(6, rect.width / 180));
+        });
+        tracking.anchors.forEach(point => {
+          const slot = point.slotIndex;
+          const text = words[slot]?.trim();
+          if (!text) return;
+          const old = smoothPoints[slot];
+          const next = old ? { x: old.x * .64 + point.x * .36, y: old.y * .64 + point.y * .36 } : point;
+          smoothPoints[slot] = next;
+          const hand = result.landmarks[point.handIndex];
+          const key = `${point.handIndex}:${point.tipIndex}:${slot}`;
+          const touchingNow = distance(hand[4], hand[point.tipIndex]);
+          if (touchingNow < .062 && !touching.has(key)) {
+            touching.add(key);
+            speakWord(text, slot);
+          } else if (touchingNow > .088) {
+            touching.delete(key);
+          }
+          const fontSize = Math.max(21, Math.min(34, rect.width / 34));
+          drawDot(next, Math.max(5, fontSize * .22), (activeUntil[slot] || 0) > performance.now());
+          context.save();
+          context.translate(next.x, next.y);
+          context.rotate(-.055);
+          context.font = `${hasChinese(text) ? "normal" : "italic"} 700 ${fontSize}px "PingFang SC","Microsoft YaHei",Arial,sans-serif`;
+          context.fillStyle = COLORS[slot];
+          context.textAlign = slot < 4 ? "right" : "left";
+          context.textBaseline = "bottom";
+          context.fillText(text, slot < 4 ? -9 : 9, -7);
+          context.restore();
+        });
+      }
+      frame = requestAnimationFrame(renderFrame);
+    }
+
+    function stopCamera(showIntro = true) {
+      if (frame) cancelAnimationFrame(frame);
+      frame = null;
+      stream?.getTracks().forEach(track => track.stop());
+      stream = null;
+      tracker?.close();
+      tracker = null;
+      video.srcObject = null;
+      smoothPoints = [];
+      smoothThumbs = [];
+      touching.clear();
+      activeUntil = {};
+      lastVideoTime = -1;
+      lastHandCount = -1;
+      speechGeneration++;
+      if (speechTimer) clearTimeout(speechTimer);
+      speechTimer = null;
+      remoteVoice.pause();
+      window.speechSynthesis?.cancel();
+      statusDot.classList.remove("found");
+      statusText.textContent = "PRIVATE CAMERA";
+      if (showIntro) app.classList.remove("live");
+    }
+
+    document.querySelector("#testVoice").addEventListener("click", () => {
+      const slot = words.findIndex(word => word.trim());
+      speakWord(slot >= 0 ? words[slot] : "Hello", Math.max(slot, 0));
+    });
+    document.querySelector("#resetWords").addEventListener("click", () => {
+      words = [...DEFAULT_WORDS];
+      saveWords();
+      renderInputs();
+    });
+    startButton.addEventListener("click", () => startCamera());
+    document.querySelector("#flip").addEventListener("click", () => startCamera(facingMode === "user" ? "environment" : "user"));
+    document.querySelector("#close").addEventListener("click", () => stopCamera(true));
+    window.addEventListener("beforeunload", () => stopCamera(false));
+    renderInputs();
+  </script>
+</body>
+</html>
